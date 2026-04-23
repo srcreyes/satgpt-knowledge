@@ -1,0 +1,190 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>eLearning — SatGPT Knowledge Portal</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=IBM+Plex+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="css/shared.css">
+<style>
+  .course-grid { display: grid; grid-template-columns: repeat(2,1fr); gap: 28px; margin-top: 8px; }
+  .course-card {
+    background: white; border: 1px solid var(--border); border-radius: 16px;
+    overflow: hidden; text-decoration: none; color: inherit;
+    transition: box-shadow 0.2s, transform 0.2s;
+    display: flex; flex-direction: column;
+  }
+  .course-card:hover { box-shadow: 0 8px 32px rgba(0,73,135,0.12); transform: translateY(-3px); }
+  .course-thumb { height: 200px; overflow: hidden; position: relative; }
+  .course-thumb img { width: 100%; height: 100%; object-fit: cover; object-position: top; }
+  .course-body { padding: 28px; flex: 1; display: flex; flex-direction: column; gap: 12px; }
+  .course-title {
+    font-family: 'DM Serif Display', serif;
+    font-size: 20px; line-height: 1.3; color: var(--ink); letter-spacing: -0.2px;
+  }
+  .course-desc { font-size: 13.5px; font-weight: 300; color: var(--ink-mid); line-height: 1.65; flex: 1; }
+  .course-meta {
+    display: flex; align-items: center; gap: 16px;
+    padding-top: 12px; border-top: 1px solid var(--border);
+  }
+  .course-meta-item {
+    display: flex; align-items: center; gap: 5px;
+    font-size: 12px; font-weight: 400; color: var(--ink-mid); opacity: 0.7;
+  }
+  .course-cta {
+    display: inline-flex; align-items: center; gap: 6px;
+    background: var(--blue-dark); color: white;
+    text-decoration: none; font-size: 13px; font-weight: 600;
+    padding: 10px 20px; border-radius: 7px;
+    transition: background 0.18s; align-self: flex-start; margin-top: 4px;
+  }
+  .course-cta:hover { background: var(--blue); }
+</style>
+</head>
+<body>
+<nav>
+  <a class="nav-logo" href="index.html"><span class="logo-name">SatGPT Knowledge Portal</span></a>
+  <ul class="nav-center">
+    <li><a href="https://satgpt.net/" target="_blank">SatGPT</a></li>
+    <li><a href="events.html">Events</a></li>
+    <li><a href="case-studies.html">Case Studies</a></li>
+    <li><a href="elearning.html">eLearning</a></li>
+    <li><a href="publications.html">Publications</a></li>
+    <li><a href="about.html">About</a></li>
+    <li><a href="help.html">Help</a></li>
+  </ul>
+  <div class="nav-right"></div>
+</nav>
+
+<div style="padding-top:64px;">
+  <div class="page-hero">
+    <div class="page-eyebrow">eLearning · Capacity Development</div>
+    <h1 class="page-title">Online Courses</h1>
+    <p class="page-subtitle">Self-paced courses on Earth observation, AI, and geospatial tools for flood mapping and disaster risk reduction.</p>
+  </div>
+  <div class="page-content">
+    <div class="course-grid">
+
+      <div class="course-card">
+        <div class="course-thumb">
+          <img src="images/elearning/gee-code.jpg" alt="Google Earth Engine Course">
+        </div>
+        <div class="course-body">
+          <div class="course-title">Introduction to Google Earth Engine and ChatGPT for Flood Mapping</div>
+          <div class="course-desc">Learn to harness the power of Google Earth Engine's cloud computing platform alongside ChatGPT to map flood extents using Sentinel-1 SAR data. This course guides you through processing large-scale Earth observation datasets and using AI assistance for geospatial analysis.</div>
+          <div class="course-meta">
+            <span class="course-meta-item">
+              <svg width="13" height="13" viewBox="0 0 13 13" fill="none"><circle cx="6.5" cy="6.5" r="5.5" stroke="currentColor" stroke-width="1.2"/><path d="M6.5 3.5v3l2 1.5" stroke="currentColor" stroke-width="1.2" stroke-linecap="round"/></svg>
+              Self-paced
+            </span>
+            <span class="course-meta-item">
+              <svg width="13" height="13" viewBox="0 0 13 13" fill="none"><rect x="1" y="2" width="11" height="9" rx="1.5" stroke="currentColor" stroke-width="1.2"/><path d="M1 5h11" stroke="currentColor" stroke-width="1.2"/></svg>
+              Beginner–Intermediate
+            </span>
+          </div>
+          <a href="https://e-learning.unescap.org/thematicarea/detail?id=95" class="course-cta">Start Course →</a>
+        </div>
+      </div>
+
+      <div class="course-card">
+        <div class="course-thumb">
+          <img src="images/elearning/flood.jpg" alt="LLM Flood Mapping Course">
+        </div>
+        <div class="course-body">
+          <div class="course-title">Leveraging Large Language Models for Big Earth Data Processing: Mapping Flood Hotspots and Impacts</div>
+          <div class="course-desc">Explore how Large Language Models can be integrated with satellite data pipelines to automate flood hotspot identification and impact assessment. This advanced course covers prompt engineering for geospatial tasks, automated code generation, and multi-source data fusion.</div>
+          <div class="course-meta">
+            <span class="course-meta-item">
+              <svg width="13" height="13" viewBox="0 0 13 13" fill="none"><circle cx="6.5" cy="6.5" r="5.5" stroke="currentColor" stroke-width="1.2"/><path d="M6.5 3.5v3l2 1.5" stroke="currentColor" stroke-width="1.2" stroke-linecap="round"/></svg>
+              Self-paced
+            </span>
+            <span class="course-meta-item">
+              <svg width="13" height="13" viewBox="0 0 13 13" fill="none"><rect x="1" y="2" width="11" height="9" rx="1.5" stroke="currentColor" stroke-width="1.2"/><path d="M1 5h11" stroke="currentColor" stroke-width="1.2"/></svg>
+              Intermediate–Advanced
+            </span>
+          </div>
+          <a href="https://e-learning.unescap.org/thematicarea/detail?id=96" class="course-cta">Start Course →</a>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+<footer>
+  <div class="footer-top">
+    <div>
+      <a class="footer-logo" href="index.html"><span class="footer-logo-name">SatGPT Knowledge Portal</span></a>
+      <a href="https://creativecommons.org/licenses/by/4.0/deed.en" class="footer-license" target="_blank">
+        <svg width="13" height="13" viewBox="0 0 13 13" fill="none"><circle cx="6.5" cy="6.5" r="5.5" stroke="currentColor" stroke-width="1.2"/><text x="6.5" y="9.5" text-anchor="middle" font-size="5.5" fill="currentColor" font-family="sans-serif" font-weight="bold">CC</text></svg>
+        Creative Commons Attribution 4.0
+      </a>
+    </div>
+    <div>
+      <div class="footer-col-title">Portal</div>
+      <ul class="footer-links">
+        <li><a href="https://satgpt.net/" target="_blank">SatGPT</a></li>
+        <li><a href="events.html">Events</a></li>
+        <li><a href="case-studies.html">Case Studies</a></li>
+        <li><a href="elearning.html">eLearning</a></li>
+        <li><a href="publications.html">Publications</a></li>
+      </ul>
+    </div>
+    <div>
+      <div class="footer-col-title">Organization</div>
+      <ul class="footer-links">
+        <li><a href="about.html">About SatGPT</a></li>
+        <li><a href="about.html#escap">ESCAP</a></li>
+        <li><a href="about.html#partners">Partners</a></li>
+        <li><a href="about.html#funders">Funders</a></li>
+        <li><a href="about.html#contributors">Contributors</a></li>
+        <li><a href="about.html#license">Terms of Use</a></li>
+      </ul>
+    </div>
+    <div>
+      <div class="footer-col-title">Support</div>
+      <ul class="footer-links">
+        <li><a href="help.html">Help</a></li>
+        <li><a href="help.html">Quick Start</a></li>
+        <li><a href="help.html">Tutorials</a></li>
+        <li><a href="about.html#license">Disclaimer</a></li>
+      </ul>
+    </div>
+    <div>
+      <div class="footer-col-title">Contact</div>
+      <div class="contact-org">Space Applications Section</div>
+      <div class="contact-dept">ICT and Disaster Risk Reduction Division<br>UN Economic and Social Commission for Asia and the Pacific</div>
+      <div class="contact-items">
+        <div class="contact-item">
+          <svg class="contact-icon" viewBox="0 0 16 16" fill="none"><path d="M2 4h12v9H2V4z" stroke="currentColor" stroke-width="1.2" stroke-linejoin="round"/><path d="M2 4l6 5 6-5" stroke="currentColor" stroke-width="1.2" stroke-linecap="round"/></svg>
+          <a href="mailto:space-applications@un.org">space-applications@un.org</a>
+        </div>
+        <div class="contact-item">
+          <svg class="contact-icon" viewBox="0 0 16 16" fill="none"><circle cx="8" cy="8" r="6" stroke="currentColor" stroke-width="1.2"/><path d="M8 2c0 0-3 2.5-3 6s3 6 3 6" stroke="currentColor" stroke-width="1.2"/><path d="M8 2c0 0 3 2.5 3 6s-3 6-3 6" stroke="currentColor" stroke-width="1.2"/><path d="M2 8h12" stroke="currentColor" stroke-width="1.2"/></svg>
+          <a href="https://www.unescap.org/our-work/ict-disaster-risk-reduction" target="_blank">unescap.org</a>
+        </div>
+        <div class="contact-item">
+          <svg class="contact-icon" viewBox="0 0 16 16" fill="none"><path d="M8 2C5.8 2 4 3.8 4 6c0 3 4 8 4 8s4-5 4-8c0-2.2-1.8-4-4-4z" stroke="currentColor" stroke-width="1.2"/><circle cx="8" cy="6" r="1.5" stroke="currentColor" stroke-width="1.2"/></svg>
+          <span>The United Nations Building, Rajadamnern Nok Avenue, Bangkok 10200, Thailand</span>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="footer-bottom">
+    <span class="footer-bottom-left">© 2026 United Nations ESCAP · Space Applications Section · sas-unescap.github.io/satgpt</span>
+    <div class="footer-bottom-right">
+      <a href="about.html#license">Terms of Use</a>
+      <div class="footer-dot"></div>
+      <a href="about.html#license">Disclaimer</a>
+      <div class="footer-dot"></div>
+      <a href="help.html">Help</a>
+    </div>
+  </div>
+</footer>
+<script>
+document.querySelectorAll('.nav-center a').forEach(function(a) {
+  if (a.getAttribute('href') === 'elearning.html') a.classList.add('active');
+});
+</script>
+</body>
+</html>

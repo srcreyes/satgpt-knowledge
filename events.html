@@ -1,0 +1,468 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Events — SatGPT Knowledge Portal</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=IBM+Plex+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="css/shared.css">
+<style>
+  /* ── STICKY DATE TRACKER ── */
+  .date-tracker {
+    position: fixed; top: 80px; left: 32px; z-index: 100;
+    pointer-events: none; opacity: 0; transition: opacity 0.4s;
+  }
+  .date-tracker.visible { opacity: 1; }
+  .dt-year {
+    font-family: 'DM Serif Display', serif;
+    font-size: 52px; line-height: 1;
+    color: var(--blue-dark); opacity: 0.1; letter-spacing: -2px;
+    transition: all 0.35s ease;
+  }
+  .dt-month {
+    font-size: 10px; font-weight: 600; letter-spacing: 2px;
+    text-transform: uppercase; color: var(--blue);
+    opacity: 0.55; margin-top: 2px; transition: all 0.35s ease;
+  }
+
+  /* ── LAYOUT ── */
+  .events-layout {
+    display: flex; gap: 48px;
+    max-width: 1280px; margin: 0 auto; padding: 0 40px 120px;
+  }
+
+  /* ── TIMELINE RAIL ── */
+  .timeline-rail { width: 140px; flex-shrink: 0; position: relative; }
+  .rail-line { position: absolute; top: 0; bottom: 0; left: 110px; width: 2px; background: var(--border); }
+  .rail-progress {
+    position: absolute; top: 0; left: 110px; width: 2px;
+    background: linear-gradient(to bottom, var(--blue-dark), var(--blue));
+    transform-origin: top; transform: scaleY(0); will-change: transform;
+  }
+  .year-marker { position: relative; z-index: 2; display: flex; align-items: center; justify-content: flex-end; }
+  .y-dot {
+    width: 10px; height: 10px; border-radius: 50%;
+    background: var(--blue-dark); border: 2px solid white;
+    box-shadow: 0 0 0 2px var(--blue-dark); flex-shrink: 0;
+    transition: transform 0.3s, box-shadow 0.3s; margin-right: -4px;
+  }
+  .year-marker.active .y-dot { transform: scale(1.4); box-shadow: 0 0 0 3px var(--blue), 0 0 14px rgba(0,158,219,0.35); }
+  .y-label {
+    font-family: 'DM Serif Display', serif;
+    font-size: 22px; color: var(--ink); letter-spacing: -0.5px;
+    line-height: 1; white-space: nowrap;
+    transition: color 0.3s, opacity 0.3s; position: absolute; left: 0;
+  }
+  .year-marker.active .y-label { color: var(--blue-dark); }
+  .year-marker.faded .y-label { opacity: 0.28; }
+
+  /* ── MONTH TICKS ── */
+  .month-block { display: flex; flex-direction: column; align-items: flex-end; }
+  .month-row { display: flex; align-items: center; justify-content: flex-end; gap: 6px; height: 52px; width: 100%; }
+  .m-tick { height: 1px; background: var(--blue-tint-1); transition: width 0.25s, background 0.25s; order: 1; }
+  .m-tick.sm { width: 6px; }
+  .m-tick.lg { width: 11px; background: rgba(0,158,219,0.28); }
+  .m-tick.active { width: 18px !important; background: var(--blue) !important; }
+  .m-lbl {
+    font-size: 8.5px; font-weight: 500; letter-spacing: 0.4px;
+    text-transform: uppercase; color: var(--text-aaa);
+    opacity: 0; transition: opacity 0.25s; order: 0;
+  }
+  .m-lbl.show { opacity: 0.4; }
+  .m-lbl.active { opacity: 1 !important; color: var(--blue); font-weight: 600; }
+
+  /* ── EVENT DOTS ── */
+  .ev-dot-wrap { display: flex; justify-content: flex-end; margin: 2px 0; }
+  .ev-dot {
+    width: 14px; height: 14px; border-radius: 50%;
+    background: var(--blue); border: 2px solid white;
+    box-shadow: 0 0 0 2px var(--blue); cursor: pointer;
+    display: flex; align-items: center; justify-content: center;
+    transition: transform 0.22s; margin-right: -5px; position: relative;
+  }
+  .ev-dot::before {
+    content: ''; position: absolute; inset: -4px; border-radius: 50%;
+    border: 2px solid var(--blue); opacity: 0;
+    animation: pulse-ring 2s ease-out infinite;
+  }
+  .ev-dot::after {
+    content: ''; position: absolute; inset: -8px; border-radius: 50%;
+    border: 1.5px solid var(--blue); opacity: 0;
+    animation: pulse-ring 2s ease-out 0.4s infinite;
+  }
+  @keyframes pulse-ring { 0%{transform:scale(0.7);opacity:0.7;} 100%{transform:scale(1.6);opacity:0;} }
+  .ev-dot:hover { transform: scale(1.3); }
+  .ev-dot svg { width: 6px; height: 6px; fill: white; }
+
+  /* ── EVENT CARDS ── */
+  .events-content { flex: 1; }
+  .event-card {
+    display: none;
+    background: white; border: 1px solid var(--border); border-radius: 16px;
+    overflow: hidden; opacity: 0; transform: translateY(28px);
+    box-shadow: 0 2px 16px rgba(0,20,60,0.06); margin-bottom: 0;
+  }
+  .event-card.reveal { display: block; }
+  .event-card.visible {
+    opacity: 1; transform: translateY(0); margin-bottom: 48px;
+    transition: opacity 0.5s ease, transform 0.5s ease, margin-bottom 0.4s ease;
+  }
+  .ec-body { padding: 36px 40px 32px; }
+  .ec-tag {
+    display: inline-flex; align-items: center; gap: 7px;
+    font-size: 10px; font-weight: 600; letter-spacing: 1.3px;
+    text-transform: uppercase; color: var(--text-aaa); margin-bottom: 14px;
+  }
+  .ec-tag-dot { width: 6px; height: 6px; border-radius: 50%; background: var(--blue); display: inline-block; }
+  .ec-title {
+    font-family: 'DM Serif Display', serif;
+    font-size: clamp(22px, 2.2vw, 30px); line-height: 1.2;
+    letter-spacing: -0.3px; color: var(--ink); margin-bottom: 12px;
+  }
+  .ec-meta { display: flex; flex-wrap: wrap; gap: 20px; margin-bottom: 24px; }
+  .ec-meta-item { display: flex; align-items: center; gap: 6px; font-size: 13px; color: var(--ink-mid); }
+  .ec-meta-item svg { width: 14px; height: 14px; opacity: 0.5; flex-shrink: 0; }
+  .ec-blurb { font-size: 15px; font-weight: 300; line-height: 1.8; color: var(--ink-mid); }
+  .ec-gallery {
+    display: grid; grid-template-columns: repeat(3,1fr);
+    gap: 6px; padding: 20px 40px 28px;
+    background: var(--gray-tint-2); border-top: 1px solid var(--border);
+  }
+  .g-img {
+    aspect-ratio: 4/3; border-radius: 8px; overflow: hidden;
+    background: var(--blue-tint-2); cursor: pointer; transition: transform 0.2s;
+  }
+  .g-img img { width: 100%; height: 100%; object-fit: cover; display: block; transition: transform 0.3s; }
+  .g-img:hover img { transform: scale(1.04); }
+  .g-img:hover { transform: scale(0.99); }
+  .g-inner {
+    width: 100%; height: 100%;
+    display: flex; align-items: center; justify-content: center;
+    background: linear-gradient(135deg, var(--blue-tint-2), var(--blue-tint-1));
+    transition: background 0.2s;
+  }
+  .g-img:hover .g-inner { background: linear-gradient(135deg, var(--blue-tint-1), rgba(0,158,219,0.3)); }
+  .g-inner svg { width: 26px; height: 26px; opacity: 0.25; }
+</style>
+</head>
+<body>
+
+<div class="date-tracker" id="dt">
+  <div class="dt-year" id="dtYear">2026</div>
+  <div class="dt-month" id="dtMonth"></div>
+</div>
+
+<nav>
+  <a class="nav-logo" href="index.html"><span class="logo-name">SatGPT Knowledge Portal</span></a>
+  <ul class="nav-center">
+    <li><a href="https://satgpt.net/" target="_blank">SatGPT</a></li>
+    <li><a href="events.html" class="active">Events</a></li>
+    <li><a href="case-studies.html">Case Studies</a></li>
+    <li><a href="elearning.html">eLearning</a></li>
+    <li><a href="publications.html">Publications</a></li>
+    <li><a href="about.html">About</a></li>
+    <li><a href="help.html">Help</a></li>
+  </ul>
+  <div class="nav-right"></div>
+</nav>
+
+<div style="padding-top:64px;">
+  <div class="page-hero">
+    <div class="page-eyebrow">Training · Youth Forum</div>
+    <h1 class="page-title">Events</h1>
+    <p class="page-subtitle">Upcoming and past SatGPT events, training workshops, and conference presentations.</p>
+  </div>
+  <div class="events-layout">
+    <div class="timeline-rail" id="rail">
+      <div class="rail-line"></div>
+      <div class="rail-progress" id="railProg"></div>
+      <div id="railInner"></div>
+    </div>
+    <div class="events-content" id="evContent"></div>
+  </div>
+</div>
+
+<footer>
+  <div class="footer-top">
+    <div>
+      <a class="footer-logo" href="index.html"><span class="footer-logo-name">SatGPT Knowledge Portal</span></a>
+      <a href="https://creativecommons.org/licenses/by/4.0/deed.en" class="footer-license" target="_blank">
+        <svg width="13" height="13" viewBox="0 0 13 13" fill="none"><circle cx="6.5" cy="6.5" r="5.5" stroke="currentColor" stroke-width="1.2"/><text x="6.5" y="9.5" text-anchor="middle" font-size="5.5" fill="currentColor" font-family="sans-serif" font-weight="bold">CC</text></svg>
+        Creative Commons Attribution 4.0
+      </a>
+    </div>
+    <div>
+      <div class="footer-col-title">Portal</div>
+      <ul class="footer-links">
+        <li><a href="https://satgpt.net/" target="_blank">SatGPT</a></li>
+        <li><a href="events.html">Events</a></li>
+        <li><a href="case-studies.html">Case Studies</a></li>
+        <li><a href="elearning.html">eLearning</a></li>
+        <li><a href="publications.html">Publications</a></li>
+      </ul>
+    </div>
+    <div>
+      <div class="footer-col-title">Organization</div>
+      <ul class="footer-links">
+        <li><a href="about.html">About SatGPT</a></li>
+        <li><a href="about.html#escap">ESCAP</a></li>
+        <li><a href="about.html#partners">Partners</a></li>
+        <li><a href="about.html#funders">Funders</a></li>
+        <li><a href="about.html#contributors">Contributors</a></li>
+        <li><a href="about.html#license">Terms of Use</a></li>
+      </ul>
+    </div>
+    <div>
+      <div class="footer-col-title">Support</div>
+      <ul class="footer-links">
+        <li><a href="help.html">Help</a></li>
+        <li><a href="help.html">Quick Start</a></li>
+        <li><a href="help.html">Tutorials</a></li>
+        <li><a href="about.html#license">Disclaimer</a></li>
+      </ul>
+    </div>
+    <div>
+      <div class="footer-col-title">Contact</div>
+      <div class="contact-org">Space Applications Section</div>
+      <div class="contact-dept">ICT and Disaster Risk Reduction Division<br>UN Economic and Social Commission for Asia and the Pacific</div>
+      <div class="contact-items">
+        <div class="contact-item">
+          <svg class="contact-icon" viewBox="0 0 16 16" fill="none"><path d="M2 4h12v9H2V4z" stroke="currentColor" stroke-width="1.2" stroke-linejoin="round"/><path d="M2 4l6 5 6-5" stroke="currentColor" stroke-width="1.2" stroke-linecap="round"/></svg>
+          <a href="mailto:space-applications@un.org">space-applications@un.org</a>
+        </div>
+        <div class="contact-item">
+          <svg class="contact-icon" viewBox="0 0 16 16" fill="none"><circle cx="8" cy="8" r="6" stroke="currentColor" stroke-width="1.2"/><path d="M8 2c0 0-3 2.5-3 6s3 6 3 6" stroke="currentColor" stroke-width="1.2"/><path d="M8 2c0 0 3 2.5 3 6s-3 6-3 6" stroke="currentColor" stroke-width="1.2"/><path d="M2 8h12" stroke="currentColor" stroke-width="1.2"/></svg>
+          <a href="https://www.unescap.org/our-work/ict-disaster-risk-reduction" target="_blank">unescap.org</a>
+        </div>
+        <div class="contact-item">
+          <svg class="contact-icon" viewBox="0 0 16 16" fill="none"><path d="M8 2C5.8 2 4 3.8 4 6c0 3 4 8 4 8s4-5 4-8c0-2.2-1.8-4-4-4z" stroke="currentColor" stroke-width="1.2"/><circle cx="8" cy="6" r="1.5" stroke="currentColor" stroke-width="1.2"/></svg>
+          <span>The United Nations Building, Rajadamnern Nok Avenue, Bangkok 10200, Thailand</span>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="footer-bottom">
+    <span class="footer-bottom-left">© 2026 United Nations ESCAP · Space Applications Section · sas-unescap.github.io/satgpt</span>
+    <div class="footer-bottom-right">
+      <a href="about.html#license">Terms of Use</a>
+      <div class="footer-dot"></div>
+      <a href="about.html#license">Disclaimer</a>
+      <div class="footer-dot"></div>
+      <a href="help.html">Help</a>
+    </div>
+  </div>
+</footer>
+
+<script>
+(function(){
+  var MS = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+  var MF = ['January','February','March','April','May','June','July','August','September','October','November','December'];
+  var YEARS = [2026,2025,2024];
+
+  var EVENTS = [
+    {
+      year:2026, month:2,
+      tag:'Workshop · Youth Forum',
+      title:'Building institutional capacity to use artificial intelligence and spatiotemporal data for flood impact analysis: thematic training workshop and youth forum',
+      link:'https://www.unescap.org/events/2026/building-institutional-capacity-use-artificial-intelligence-and-spatiotemporal-data',
+      location:'Irrigation Training Institute, Galgamuwa, Sri Lanka',
+      dateLabel:'23–27 February 2026',
+      imgFolder:'2026_Feb_LKA',
+      blurb:'ESCAP and the Irrigation Department of Sri Lanka co-organized a five-day training workshop and youth forum from 23–27 February 2026 at the Irrigation Training Institute in Galgamuwa, Sri Lanka. Following the devastating impacts of Cyclone Ditwah, which affected 2.3 million people and caused US$4.1 billion in damages, this thematic training and youth forum increased the capacities of young professionals and government officials in using AI-powered disaster solutions for flood impact assessment and disaster risk reduction.',
+      photos:6
+    },
+    {
+      year:2025, month:11,
+      tag:'Workshop · Youth Forum',
+      title:'Building resilience to climate change through AI-powered disaster solutions',
+      link:'https://www.unescap.org/events/2025/building-resilience-climate-change-through-ai-powered-disaster-solutions-0',
+      location:'University of the Philippines, Diliman, Quezon City, Philippines',
+      dateLabel:'24–26 November 2025',
+      imgFolder:'2025_Nov_PHL',
+      blurb:'The United Nations Economic and Social Commission for Asia and the Pacific (ESCAP), in collaboration with the Philippine Space Agency and the Department of Geodetic Engineering of the University of the Philippines – Diliman, hosted a thematic training and youth forum entitled "Building Resilience to Climate Change through AI-Powered Disaster Solutions," from 24 to 26 November 2025.',
+      photos:6
+    },
+    {
+      year:2025, month:6,
+      tag:'Workshop',
+      title:'Building institutional capacity to use artificial intelligence and spatiotemporal data for flood impact analysis',
+      link:'https://www.unescap.org/events/2025/building-institutional-capacity-use-artificial-intelligence-and-spatiotemporal-data-0',
+      location:'National Research and Innovation Agency (BRIN) Headquarters, Jakarta, Indonesia',
+      dateLabel:'17–19 June 2025',
+      imgFolder:'2025_Jun_IDN',
+      blurb:'The BRIN–ESCAP Workshop on Space Applications for Sustainable Development in Asia and the Pacific took place from 17 to 19 June 2025 in Jakarta, Indonesia. Organized in conjunction with the 21st ASEAN Ministers Meeting on Science, Technology, and Innovation (AMMSTI-21) and the 87th ASEAN Committee on Science, Technology and Innovation (COSTI-87), the workshop served as a strategic platform to promote the integration of digital innovations into regional sustainable development agendas.',
+      photos:6
+    },
+    {
+      year:2025, month:5,
+      tag:'Workshop · Youth Forum',
+      title:'Building institutional capacity to use artificial intelligence and spatiotemporal data for flood impact analysis: thematic training workshop and youth forum',
+      link:'https://www.unescap.org/events/2025/building-institutional-capacity-use-artificial-intelligence-and-spatiotemporal-data',
+      location:'Asian Institute of Technology, Pathum Thani, Thailand',
+      dateLabel:'06–08 May 2025',
+      imgFolder:'2025_May_THA',
+      blurb:'ESCAP and its partners strengthened the capacity of governments and young professionals to use integrated spatiotemporal data and AI tools, such as SatGPT and the Risk and Resilience Portal, to support disaster response and climate adaptation.',
+      photos:6
+    },
+    {
+      year:2024, month:11,
+      tag:'Workshop',
+      title:'Strengthening disaster resilience in the Asia-Pacific region: integrated risk management through geospatial data and disaster hotspot mapping for enhanced preparedness',
+      link:'https://www.unescap.org/events/2024/strengthening-disaster-resilience-asia-pacific-region-integrated-risk-management',
+      location:'National Research and Innovation Agency (BRIN) Headquarters, Jakarta, Indonesia',
+      dateLabel:'20–24 November 2024',
+      imgFolder:'2024_Nov_IDN',
+      blurb:'The "Strengthening Disaster Resilience in the Asia-Pacific Region" workshop was held from 20 to 22 November 2024 at the Headquarters of the National Research and Innovation Agency (BRIN), in Jakarta, Indonesia. The event brought together regional experts and stakeholders to advance the Early Warnings for All (EW4All) initiative.',
+      photos:6
+    }
+  ];
+
+  // ── BUILD RAIL ──
+  var railInner = document.getElementById('railInner');
+  var html = '';
+
+  YEARS.forEach(function(year, yi){
+    html += '<div class="year-marker" id="ym-'+year+'" data-year="'+year+'">';
+    html += '<div class="y-dot"></div><div class="y-label">'+year+'</div></div>';
+
+    var startMonth = 11;
+    var endMonth   = (yi === YEARS.length-1) ? 1 : 0;
+    html += '<div class="month-block" id="mb-'+year+'">';
+    for(var mi=startMonth; mi>=endMonth; mi--){
+      var isQ = (mi===8||mi===5||mi===2);
+      html += '<div class="month-row" data-year="'+year+'" data-month="'+mi+'" id="mr-'+year+'-'+mi+'">';
+      html += '<div class="m-tick '+(isQ?'lg':'sm')+'" id="mt-'+year+'-'+mi+'"></div>';
+      html += '<div class="m-lbl'+(isQ?' show lg':'')+'" id="ml-'+year+'-'+mi+'">'+MS[mi]+'</div>';
+      html += '</div>';
+      EVENTS.forEach(function(ev){
+        if(ev.year===year && (ev.month-1)===mi){
+          var dotId = 'evdot-'+year+'-'+mi;
+          html += '<div class="ev-dot-wrap"><div class="ev-dot" id="'+dotId+'" onclick="goToEvent(\'ec-'+year+'-'+mi+'\')">';
+          html += '<svg viewBox="0 0 12 12"><circle cx="6" cy="6" r="4"/></svg></div></div>';
+        }
+      });
+    }
+    html += '</div>';
+  });
+
+  railInner.innerHTML = html;
+
+  // ── BUILD EVENT CARDS ──
+  var evContent = document.getElementById('evContent');
+  var chtml = '';
+
+  EVENTS.forEach(function(ev){
+    var id = 'ec-'+ev.year+'-'+(ev.month-1);
+    chtml += '<div class="event-card" id="'+id+'">';
+    chtml += '<div class="ec-body">';
+    chtml += '<div class="ec-tag"><span class="ec-tag-dot"></span>'+ev.tag+'</div>';
+    chtml += '<h2 class="ec-title"><a href="'+ev.link+'" target="_blank" style="color:inherit;text-decoration:none;border-bottom:1px solid rgba(0,73,135,0.2);transition:border-color 0.18s;" onmouseover="this.style.borderColor=\'var(--blue)\'" onmouseout="this.style.borderColor=\'rgba(0,73,135,0.2)\'">'+ev.title+'</a></h2>';
+    chtml += '<div class="ec-meta">';
+    chtml += '<div class="ec-meta-item"><svg viewBox="0 0 16 16" fill="none"><path d="M8 2C5.8 2 4 3.8 4 6c0 3 4 8 4 8s4-5 4-8c0-2.2-1.8-4-4-4z" stroke="currentColor" stroke-width="1.3"/><circle cx="8" cy="6" r="1.5" stroke="currentColor" stroke-width="1.3"/></svg>'+ev.location+'</div>';
+    chtml += '<div class="ec-meta-item"><svg viewBox="0 0 16 16" fill="none"><rect x="2" y="3" width="12" height="11" rx="1.5" stroke="currentColor" stroke-width="1.3"/><path d="M2 7h12M5 2v2M11 2v2" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/></svg>'+ev.dateLabel+'</div>';
+    chtml += '</div>';
+    chtml += '<div class="ec-blurb">'+ev.blurb+'</div>';
+    chtml += '</div>';
+    chtml += '<div class="ec-gallery">';
+    for(var p=1; p<=ev.photos; p++){
+      var jpg  = 'images/'+ev.imgFolder+'/Photo'+p+'.jpg';
+      var jpeg = 'images/'+ev.imgFolder+'/Photo'+p+'.jpeg';
+      chtml += '<div class="g-img"><img src="'+jpg+'" alt="Event photo '+p+'" onerror="if(this.getAttribute(\'data-tried\')!==\'1\'){this.setAttribute(\'data-tried\',\'1\');this.src=\''+jpeg+'\';}else{this.parentNode.innerHTML=\'<div class=g-inner><svg viewBox=&quot;0 0 24 24&quot; fill=&quot;none&quot;><rect x=&quot;3&quot; y=&quot;4&quot; width=&quot;18&quot; height=&quot;14&quot; rx=&quot;2&quot; stroke=&quot;currentColor&quot; stroke-width=&quot;1.5&quot;/><circle cx=&quot;8.5&quot; cy=&quot;9.5&quot; r=&quot;1.5&quot; stroke=&quot;currentColor&quot; stroke-width=&quot;1.5&quot;/></svg></div>\';}"></div>';
+    }
+    chtml += '</div></div>';
+  });
+
+  evContent.innerHTML = chtml;
+
+  // ── SCROLL HANDLER ──
+  var dt   = document.getElementById('dt');
+  var dtY  = document.getElementById('dtYear');
+  var dtM  = document.getElementById('dtMonth');
+  var prog = document.getElementById('railProg');
+  var rail = document.getElementById('rail');
+  var lastY = null, lastM = null;
+  var revealed = {};
+
+  function clearHighlights(){
+    document.querySelectorAll('.m-tick').forEach(function(t){t.classList.remove('active');});
+    document.querySelectorAll('.m-lbl').forEach(function(l){l.classList.remove('active');});
+    document.querySelectorAll('.year-marker').forEach(function(y){y.classList.remove('active','faded');});
+  }
+
+  function onScroll(){
+    var sy   = window.scrollY;
+    var docH = document.documentElement.scrollHeight - window.innerHeight;
+    var pct  = Math.max(0, Math.min(1, sy / docH));
+
+    prog.style.height    = rail.offsetHeight + 'px';
+    prog.style.transform = 'scaleY(' + pct + ')';
+
+    if(sy > 180){ dt.classList.add('visible'); } else { dt.classList.remove('visible'); }
+
+    var rows = document.querySelectorAll('.month-row');
+    var best = null, bestD = Infinity;
+    var mid  = sy + window.innerHeight * 0.4;
+    rows.forEach(function(r){
+      var top = r.getBoundingClientRect().top + sy;
+      var d   = Math.abs(top - mid);
+      if(d < bestD){ bestD = d; best = r; }
+    });
+
+    clearHighlights();
+
+    if(best){
+      var cy = parseInt(best.dataset.year);
+      var cm = parseInt(best.dataset.month);
+      var tick = document.getElementById('mt-'+cy+'-'+cm);
+      var lbl  = document.getElementById('ml-'+cy+'-'+cm);
+      if(tick) tick.classList.add('active');
+      if(lbl)  lbl.classList.add('active','show');
+
+      YEARS.forEach(function(y){
+        var ym = document.getElementById('ym-'+y);
+        if(!ym) return;
+        if(y === cy)    ym.classList.add('active');
+        else if(y < cy) ym.classList.add('faded');
+      });
+
+      if(cy !== lastY || cm !== lastM){
+        lastY = cy; lastM = cm;
+        dtY.textContent = cy;
+        dtM.textContent = MF[cm];
+      }
+    }
+
+    EVENTS.forEach(function(ev){
+      var key    = ev.year + '-' + (ev.month - 1);
+      var dotId  = 'evdot-' + key;
+      var cardId = 'ec-'    + key;
+      if(revealed[key]) return;
+
+      var dot  = document.getElementById(dotId);
+      var card = document.getElementById(cardId);
+      if(!dot || !card) return;
+
+      var dotTop = dot.getBoundingClientRect().top;
+      if(dotTop < window.innerHeight * 0.55){
+        revealed[key] = true;
+        card.classList.add('reveal');
+        requestAnimationFrame(function(){
+          requestAnimationFrame(function(){
+            card.classList.add('visible');
+          });
+        });
+      }
+    });
+  }
+
+  window.goToEvent = function(id){
+    var el = document.getElementById(id);
+    if(el){ el.scrollIntoView({behavior:'smooth', block:'center'}); }
+  };
+
+  window.addEventListener('scroll', onScroll, {passive:true});
+  onScroll();
+})();
+</script>
+</body>
+</html>

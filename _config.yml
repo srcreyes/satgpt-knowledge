@@ -1,0 +1,5 @@
+# GitHub Pages configuration
+# No Jekyll processing needed — this is a plain HTML site
+exclude:
+  - README.md
+  - "*.sh"
