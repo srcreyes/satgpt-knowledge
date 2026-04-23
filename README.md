@@ -1,6 +1,6 @@
 # SatGPT Knowledge Portal
 
-Static website for the [SatGPT Knowledge Portal](https://satgpt.net/), published via GitHub Pages.
+Static website for the [SatGPT Knowledge Portal]([https://satgpt.net/](https://srcreyes.github.io/satgpt-knowledge/)), published via GitHub Pages.
 
 Developed by the **Space Applications Section**, ICT and Disaster Risk Reduction Division, UN Economic and Social Commission for Asia and the Pacific (ESCAP).
 
