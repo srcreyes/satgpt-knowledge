@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Case Studies — SatGPT Knowledge Portal</title>
-<link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=IBM+Plex+Sans:wght@300;400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=IBM+Plex+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
 <link rel="stylesheet" href="css/shared.css">
 <style>
@@ -12,7 +12,7 @@
     --flood:#E5243B; --water:#009EDB;
     --drr:#004987; --social:#FFC800; --natres:#009EDB;
     --exposure:#009EDB; --damage:#004987; --validate:#7E57C2;
-    --mono:'IBM Plex Mono',monospace; --serif:'DM Serif Display',serif; --sans:'IBM Plex Sans',sans-serif;
+    --mono:'IBM Plex Sans',sans-serif; --serif:'DM Serif Display',serif; --sans:'IBM Plex Sans',sans-serif;
   }
   /* ---- storymap shell ---- */
   .sg-controls{position:sticky; top:64px; z-index:120; display:flex; align-items:center; gap:14px;
@@ -27,7 +27,7 @@
   .sg-lens button:focus-visible{outline:2px solid var(--blue); outline-offset:-2px}
   .sg-prog{margin-left:auto; font-family:var(--mono); font-size:11px; color:var(--ink-mid)}
 
-  .sg-grid{display:grid; grid-template-columns:minmax(360px,42%) 1fr; max-width:1600px; margin:0 auto}
+  .sg-grid{display:grid; grid-template-columns:minmax(440px,48%) 1fr; max-width:1600px; margin:0 auto}
   .sg-narr{padding:0}
   .sg-mapcol{position:relative}
   .sg-sticky{position:sticky; top:calc(64px + 49px); height:calc(100vh - 64px - 49px)}
@@ -65,32 +65,32 @@
   h2.sg-case{font-family:var(--serif); font-size:clamp(26px,3vw,40px); line-height:1.08; letter-spacing:-.4px;
     color:var(--ink); margin:0 0 6px}
   .sg-place{font-family:var(--mono); font-size:11px; letter-spacing:.6px; text-transform:uppercase; color:var(--ink-mid); margin-bottom:18px}
-  .sg-body{font-size:17px; font-weight:300; line-height:1.6; color:var(--ink); max-width:40ch}
+  .sg-body{font-size:17px; font-weight:300; line-height:1.65; color:var(--ink); max-width:56ch}
 
   .sg-stat{margin:24px 0 2px; display:flex; align-items:baseline; gap:12px}
   .sg-stat .n{font-family:var(--serif); font-size:clamp(38px,4.6vw,58px); line-height:1; color:var(--accent,#004987)}
   .sg-stat .l{font-size:14.5px; font-weight:300; line-height:1.35; color:var(--ink-mid); max-width:20ch}
 
   .sg-reality{margin-top:20px; background:var(--blue-tint-2); border:1px solid var(--border); border-radius:9px;
-    padding:14px 16px; max-width:40ch}
+    padding:14px 16px; max-width:52ch}
   .sg-reality .t{font-family:var(--sans); font-size:9px; font-weight:600; letter-spacing:1.6px; text-transform:uppercase;
     color:var(--flood); display:flex; align-items:center; gap:7px; margin-bottom:8px}
   .sg-reality .t i{width:6px; height:6px; background:var(--flood); border-radius:50%}
   .sg-reality p{margin:0; font-size:14px; line-height:1.5; color:var(--ink)}
 
   /* alignment block: Plan of Action theme + related SDGs */
-  .sg-align{margin-top:22px; display:flex; flex-direction:column; gap:16px; max-width:42ch}
-  .sg-al{font-family:var(--sans); font-size:9px; font-weight:600; letter-spacing:1.6px; text-transform:uppercase;
+  .sg-align{margin-top:24px; display:flex; flex-direction:column; gap:18px; max-width:56ch}
+  .sg-al{font-family:var(--sans); font-size:10.5px; font-weight:600; letter-spacing:1.6px; text-transform:uppercase;
     color:var(--text-aaa); margin-bottom:8px}
-  .sg-poa{border-left:3px solid var(--accent,#009EDB); padding-left:12px}
-  .sg-poa b{font-family:var(--serif); font-size:16px; color:var(--ink); display:block; line-height:1.15}
-  .sg-poa span{font-size:13px; color:var(--ink-mid)}
-  .sdgrow{display:flex; flex-wrap:wrap; gap:8px}
-  .sdg{position:relative; width:40px; height:40px; border-radius:4px; overflow:hidden; cursor:default; flex:0 0 auto;
+  .sg-poa{border-left:4px solid var(--accent,#009EDB); padding-left:14px}
+  .sg-poa b{font-family:var(--serif); font-size:23px; color:var(--ink); display:block; line-height:1.15}
+  .sg-poa span{font-size:16px; color:var(--ink-mid); display:block; margin-top:4px}
+  .sdgrow{display:flex; flex-wrap:wrap; gap:10px}
+  .sdg{position:relative; width:58px; height:58px; border-radius:6px; overflow:hidden; cursor:default; flex:0 0 auto;
     box-shadow:0 1px 4px rgba(0,0,0,.12)}
   .sdg img{width:100%; height:100%; object-fit:cover; display:block}
   .sdg-tile{width:100%; height:100%; background:var(--sc,#999); color:#fff; display:flex; align-items:center;
-    justify-content:center; font-family:var(--sans); font-weight:600; font-size:15px}
+    justify-content:center; font-family:var(--sans); font-weight:600; font-size:22px}
 
   /* synthesis */
   .sg-tot{display:flex; gap:26px; flex-wrap:wrap; margin:6px 0 24px}
@@ -150,7 +150,7 @@
 
 <div style="padding-top:64px;">
   <div class="page-hero" style="padding-bottom:32px;">
-    <div class="page-eyebrow">Applications · Field Work</div>
+    <div class="page-eyebrow">Applications</div>
     <h1 class="page-title">Case Studies</h1>
     <p class="page-subtitle">From a plain-language question to a policy priority — 24 SatGPT flood analyses across Asia and the Pacific, each aligned to the Plan of Action and the Sustainable Development Goals.</p>
   </div>
