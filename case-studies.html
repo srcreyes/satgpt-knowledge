@@ -294,51 +294,55 @@ try{
 }catch(e){ console.warn('map init',e); }
 
 function ramp(v){const s=[[255,241,214],[247,179,120],[229,36,59],[140,10,25]];const t=Math.max(0,Math.min(1,v))*3,i=Math.floor(t),f=t-i,a=s[i],b=s[Math.min(3,i+1)];return 'rgb('+a.map((x,k)=>Math.round(x+(b[k]-x)*f)).join(',')+')';}
-function drawFloodLayer(gj){ if(!map)return;
-  L.geoJSON(gj,{style:f=>{const c=+((f.properties&&f.properties.cls)||1);return{stroke:false,fillColor:ramp(Math.min(1,c/9)),fillOpacity:.72};},
-    pointToLayer:(f,ll)=>L.circleMarker(ll,{radius:4,stroke:false,fillColor:ramp(.7),fillOpacity:.75})}).addTo(floodGroup);
+function popupHTML(ch){ return '<div class="mappop"><span class="pk">'+esc(ch.id)+' · '+esc(ch.place||'')+'</span><b>'+esc(ch.title)+'</b>'
+  +(ch.image?'<img src="'+esc(ch.image)+'" alt="" style="width:100%;border-radius:6px;margin:8px 0 2px">':'')
+  +(ch.stat?'<div class="ps"><span class="pn">'+esc(ch.stat)+'</span> '+esc(ch.statlabel||'')+'</div>':'')
+  +(ch.reality?'<div class="ps" style="opacity:.85">'+esc(ch.reality)+'</div>':'')
+  +'<div class="psdg">'+sdgChips(ch,true)+'</div>'
+  +(ch.plink?'<div class="ps" style="margin-top:6px"><a href="'+esc(ch.plink)+'" target="_blank" rel="noopener" style="color:var(--blue-dark);font-weight:600;text-decoration:none">View presentation →</a></div>':'')
+  +'<div class="pp">'+esc(ch.poa||'')+(ch.sub?' → '+esc(ch.sub):'')+(ch.credit?' · Source: '+esc(ch.credit):'')+'</div></div>'; }
+function tinyDot(color){ return (f,ll)=>L.circleMarker(ll,{radius:2,stroke:false,fillColor:color,fillOpacity:.5}); }
+function drawFloodLayer(gj, ch){ if(!map)return;
+  const lyr=L.geoJSON(gj,{style:f=>{const c=+((f.properties&&f.properties.cls)||1);return{stroke:false,fillColor:ramp(Math.min(1,c/9)),fillOpacity:.72};},
+    pointToLayer:(f,ll)=>L.circleMarker(ll,{radius:4,stroke:false,fillColor:ramp(.7),fillOpacity:.75})});
+  if(ch) lyr.bindPopup(popupHTML(ch),{maxWidth:270,className:'sg-popup'});
+  lyr.addTo(floodGroup);
 }
-function drawOverlay(gj, role){
+function drawOverlay(gj, role, ch){
   let style, pointToLayer;
-  if(role==='admin')          style=()=>({color:'#004987',weight:1.2,opacity:.7,fill:false,dashArray:'4,3'});
-  else if(role==='roads')     style=()=>({color:'#2E4A62',weight:1,opacity:.5});
-  else if(role==='buildings') style=()=>({stroke:false,fillColor:'#E5243B',fillOpacity:.32});
-  else if(role==='landuse')   style=()=>({stroke:false,fillColor:'#009EDB',fillOpacity:.14});
-  else                        style=()=>({color:'#009EDB',weight:1});
+  if(role==='admin')          { style=()=>({color:'#004987',weight:1.2,opacity:.85,fill:false,dashArray:'4,3'}); pointToLayer=tinyDot('#004987'); }
+  else if(role==='roads')     { style=()=>({color:'#2E4A62',weight:1,opacity:.55}); pointToLayer=tinyDot('#2E4A62'); }
+  else if(role==='buildings') { style=()=>({stroke:false,fillColor:'#E5243B',fillOpacity:.32}); pointToLayer=tinyDot('#E5243B'); }
+  else if(role==='landuse')   { style=()=>({stroke:false,fillColor:'#009EDB',fillOpacity:.14}); pointToLayer=tinyDot('#009EDB'); }
+  else                        { style=()=>({color:'#009EDB',weight:1}); }
   if(role==='infra') pointToLayer=(f,ll)=>{const p=f.properties||{},a=String(p.amenity||p.office||p.type||'').toLowerCase();
     let c='#009EDB'; if(/hospital|clinic|doctor|health/.test(a))c='#E5243B'; else if(/school|college|univ|educ/.test(a))c='#E0A200'; else if(/office|townhall|govern/.test(a))c='#004987';
     const m=L.circleMarker(ll,{radius:4,color:'#fff',weight:1.4,fillColor:c,fillOpacity:.95}); if(p.name)m.bindTooltip(p.name,{direction:'top'}); return m;};
   const group = role==='admin'?adminGroup : role==='roads'?roadsGroup : role==='infra'?infraGroup : bldgGroup;
-  L.geoJSON(gj,{style,pointToLayer}).addTo(group);
-}
-function drawResult(ch){ if(!map)return; const col=colorFor(ch);
-  const icon=L.divIcon({className:'amark',html:'<div class="dia" style="--accent:'+col+';background:'+col+'"></div>',iconSize:[22,22],iconAnchor:[11,11]});
-  const m=L.marker([ch.lat,ch.lng],{icon,keyboard:false}).addTo(markerGroup);
-  m.bindPopup('<div class="mappop"><span class="pk">'+esc(ch.id)+' · '+esc(ch.place||'')+'</span><b>'+esc(ch.title)+'</b>'
-    +(ch.image?'<img src="'+esc(ch.image)+'" alt="" style="width:100%;border-radius:6px;margin:8px 0 2px">':'')
-    +(ch.stat?'<div class="ps"><span class="pn">'+esc(ch.stat)+'</span> '+esc(ch.statlabel||'')+'</div>':'')
-    +(ch.reality?'<div class="ps" style="opacity:.85">'+esc(ch.reality)+'</div>':'')
-    +'<div class="psdg">'+sdgChips(ch,true)+'</div>'
-    +(ch.plink?'<div class="ps" style="margin-top:6px"><a href="'+esc(ch.plink)+'" target="_blank" rel="noopener" style="color:var(--blue-dark);font-weight:600;text-decoration:none">View presentation →</a></div>':'')
-    +'<div class="pp">'+esc(ch.poa||'')+(ch.sub?' → '+esc(ch.sub):'')+(ch.credit?' · Source: '+esc(ch.credit):'')+'</div></div>',{maxWidth:270,className:'sg-popup'});
+  const lyr=L.geoJSON(gj,{style,pointToLayer});
+  if(role==='admin' && ch) lyr.bindPopup(popupHTML(ch),{maxWidth:270,className:'sg-popup'});
+  lyr.addTo(group);
 }
 function layerBase(s){ return (s||'').replace(/\.(tif|tiff|geojson|json)$/i,''); }
 async function fetchLayer(file){ const name=layerBase(file); if(!name) return null;
-  if(LAYER_BASE_URL){ try{const r=await fetch(LAYER_BASE_URL+name+'.geojson'); if(r.ok) return await r.json();}catch(e){} }
+  if(LAYER_BASE_URL){ try{ const url=LAYER_BASE_URL+name+'.geojson'; const r=await fetch(url);
+    if(r.ok) return await r.json(); console.warn('[case-studies] layer not found ('+r.status+'):',url);
+  }catch(e){ console.warn('[case-studies] layer fetch error:',name,e); } }
   return SAMPLE_LAYERS[name]||null; }
-function overlaysFor(ch){ const o={}; ['admin','roads','buildings','infra'].forEach(k=>{ if(ch.ov&&ch.ov[k]) o[k]=ch.ov[k]; });
-  return Object.keys(o).length?o:(OVERLAYS[ch.id]||null); }
+function overlaysFor(ch){ const base=Object.assign({}, OVERLAYS[ch.id]||{});
+  ['admin','roads','buildings','infra'].forEach(k=>{ if(ch.ov&&ch.ov[k]) base[k]=ch.ov[k]; });
+  return Object.keys(base).length?base:null; }
 async function loadOverlays(ch){ const ov=overlaysFor(ch); if(!ov) return;
-  for(const role of ['landuse','buildings','roads','infra','admin']){ if(!ov[role])continue; const gj=await fetchLayer(ov[role]); if(gj)drawOverlay(gj,role); } }
+  for(const role of ['landuse','buildings','roads','infra','admin']){ if(!ov[role])continue; const gj=await fetchLayer(ov[role]); if(gj)drawOverlay(gj,role,ch); } }
 function showMapImage(ch){ const box=document.getElementById('mapimg'); if(!box)return;
   if(ch.image){ box.querySelector('img').src=ch.image; box.querySelector('.cap').textContent=ch.title||''; box.style.display='block'; }
   else box.style.display='none'; }
 function clearAll(){ [floodGroup,bldgGroup,roadsGroup,infraGroup,adminGroup,markerGroup].forEach(g=>g&&g.clearLayers()); }
 async function loadCase(ch){ if(!map)return; clearAll();
   const gj=await fetchLayer(ch.layer);
-  if(gj) drawFloodLayer(gj);   // real exported flood layer only — nothing invented
+  if(gj) drawFloodLayer(gj, ch);   // real exported flood layer only — nothing invented
   showMapImage(ch);
-  loadOverlays(ch); setTimeout(()=>drawResult(ch),780); }
+  loadOverlays(ch); }
 
 /* ============ render ============ */
 const story=document.getElementById('story');
@@ -407,8 +411,7 @@ function setupScroll(){ if(scroller)scroller.destroy(); scroller=scrollama();
       const num=element.querySelector('[data-stat]'); if(num)counter(num); }
     if(k==='intro'&&map){ map.flyTo([12,118],4.3,{duration:1.3}); clearAll(); const mi=document.getElementById('mapimg'); if(mi)mi.style.display='none'; }
     if(k==='synth'){ const mi2=document.getElementById('mapimg'); if(mi2)mi2.style.display='none'; element.querySelectorAll('[data-c]').forEach(counter); buildMatrix();
-      if(map){ map.flyTo([9,116],4,{duration:1.5}); clearAll();
-        CASES.forEach(c=>L.circleMarker([c.lat,c.lng],{radius:6,color:'#fff',weight:1.5,fillColor:colorFor(c),fillOpacity:.9}).addTo(markerGroup)); } }
+      if(map){ map.flyTo([9,116],4,{duration:1.5}); clearAll(); } }
   });
 }
 window.addEventListener('scroll',()=>{ const h=document.body.scrollHeight-window.innerHeight; const p=Math.round(window.scrollY/h*100);
