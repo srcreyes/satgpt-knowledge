@@ -131,15 +131,26 @@
     .sg-controls{padding:10px 20px}
   }
   @media(prefers-reduced-motion:reduce){ *{animation:none!important; transition:none!important} .sg-inner{opacity:1;transform:none} }
+
+  /* ---- placeholder mode ----
+     While <body> has class="cs-placeholder", the page shows the "under construction" notice
+     (styled by .under-construction in css/shared.css) instead of the case studies.
+     To publish the full page, remove class="cs-placeholder" from the body tag. */
+  .cs-uc{display:none}
+  .cs-placeholder .cs-uc{display:flex}
+  .cs-placeholder .cs-wrap{min-height:calc(100vh - 64px); display:flex; flex-direction:column}
+  .cs-placeholder .sg-controls,
+  .cs-placeholder .sg-grid,
+  .cs-placeholder .page-subtitle{display:none}
 </style>
 </head>
-<body>
+<body class="cs-placeholder">
 <nav>
   <a class="nav-logo" href="index.html"><span class="logo-name">SatGPT Knowledge Portal</span></a>
   <ul class="nav-center">
     <li><a href="https://satgpt.net/" target="_blank">SatGPT</a></li>
     <li><a href="events.html">Events</a></li>
-    <!-- <li><a href="case-studies.html">Case Studies</a></li> -->
+    <li><a href="case-studies.html">Case Studies</a></li>
     <li><a href="elearning.html">eLearning</a></li>
     <li><a href="publications.html">Publications</a></li>
     <li><a href="about.html">About</a></li>
@@ -148,11 +159,18 @@
   <div class="nav-right"></div>
 </nav>
 
-<div style="padding-top:64px;">
+<div class="cs-wrap" style="padding-top:64px;">
   <div class="page-hero" style="padding-bottom:32px;">
     <div class="page-eyebrow">Applications</div>
     <h1 class="page-title">Case Studies</h1>
     <p class="page-subtitle">From a plain-language question to a policy priority — 24 SatGPT flood analyses across Asia and the Pacific, each aligned to the Plan of Action and the Sustainable Development Goals.</p>
+  </div>
+
+  <div class="under-construction cs-uc">
+    <div class="uc-inner">
+      <div class="uc-icon">🚧</div>
+      <p class="uc-text">This page is under construction. Content will be added soon.</p>
+    </div>
   </div>
 
   <div class="sg-controls">
@@ -190,7 +208,7 @@
       <ul class="footer-links">
         <li><a href="https://satgpt.net/" target="_blank">SatGPT</a></li>
         <li><a href="events.html">Events</a></li>
-        <!-- <li><a href="case-studies.html">Case Studies</a></li> -->
+        <li><a href="case-studies.html">Case Studies</a></li>
         <li><a href="elearning.html">eLearning</a></li>
         <li><a href="publications.html">Publications</a></li>
       </ul>
@@ -437,7 +455,7 @@ function rowsToCases(rows){ return rows.filter(r=>r.id&&r.lat&&r.lng).map(r=>({
 function boot(rows){ CASES=rowsToCases(rows);
   if(!CASES.length){ story.innerHTML='<section class="sg-step"><div class="sg-inner"><p class="sg-body">No case studies loaded.</p></div></section>'; return; }
   renderStory(); setupScroll(); document.querySelector('.sg-step')?.classList.add('on'); }
-(function load(){ if(SHEET_CSV_URL){ Papa.parse(SHEET_CSV_URL,{download:true,header:true,skipEmptyLines:true,
+(function load(){ if(document.body.classList.contains('cs-placeholder')) return; if(SHEET_CSV_URL){ Papa.parse(SHEET_CSV_URL,{download:true,header:true,skipEmptyLines:true,
     complete:r=>boot(r.data), error:()=>boot(Papa.parse(FALLBACK_CSV,{header:true,skipEmptyLines:true}).data)}); }
   else { boot(Papa.parse(FALLBACK_CSV,{header:true,skipEmptyLines:true}).data); } })();
 
